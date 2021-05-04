@@ -1,5 +1,6 @@
 from pulp import GLPK
 from pulp import LpMaximize, LpProblem, LpStatus, lpSum, LpVariable
+import introduceProblem
 
 
 model = LpProblem(name="Demo", sense=LpMaximize)
