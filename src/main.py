@@ -16,7 +16,9 @@ max_capacity_1 = 16.5   # Tonnes
 max_capacity_2 = 5.5    # Tonnes
 
 
-x = list(list(list(list)))   # x_vj^cf -> camion passe ou pas
+# TODO : introduce variables
+x = list(list(list(list)))   # x_vj^cf -> camion passe ou pas, x[c][f][v][j]
+y = list(list(list(list)))   # y_vj^cf -> produit x_v * x_a
 p = list(list)               # p_cj -> type transporté
 n = list()                   # n_s -> nombre de camions au semestre s
 
@@ -33,6 +35,15 @@ model += (2*x1 + x2 + x3 <= 20, 'Constraint 1')
 model += (3*x1 + x2 + 2*x3 <= 30, 'Constraint 2')
 
 
-model += costs.salary(x) + costs.maintainance(x) + costs.fuel(x), 'Objective Function'
+for c in range(len(y)):
+    for f in range(len(y[0])):
+        for v in range(len(y[0][0])):
+            for j in range(len(y[0][0][0]))):
+                model += (y[c][f][v][j] <= x[c][f][v][j], 'Produit de binaires')
+                model += (y[c][f][v][j] <= x[c][f][len(x)-1][j], 'Produit de binaires')  # indice d'anvers
+                model += (y[c][f][v][j] >= x[v] + x[len(x)-1] - 1, 'Produit de binaires')
+
+
+model += costs.salary(x, distances) + costs.maintainance(x) + costs.fuel(x), 'Objective Function'
 
 status = model.solve(solver=GLPK(msg=True, keepFiles=True))
