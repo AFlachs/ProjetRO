@@ -23,18 +23,67 @@ def introduce_distances():
 
 
 def introduce_city_requests():
-    # TODO : créer un tableau ayant une dimension "temps" (il en faut 10, 1 par semestre) et une dimension
+    # Tableau ayant une dimension "temps" (il en faut 10, 1 par semestre) et une dimension
     # villes, puis le remplir correctement
-    return
+    city_requests = np.array(
+        [   # Anvers    Charleroi   Gand    Bruxelles   Hasselt     Liege
+            [0,         0,          0,      0,          0,          0],
+            [0,         0,          0,      0,          0,          0],
+            [9000,      12000,      2000,   6200,       350,        30000],
+            [9000,      12000,      2000,   6200,       1650,       30000],
+            [18000,     24000,      4000,   12400,      2000,       60000],
+            [18000,     24000,      4000,   12400,      2000,       60000],
+            [27000,     36000,      6000,   18600,      2350,       90000],
+            [27000,     36000,      6000,   18600,      2350,       90000],
+            [36000,     48000,      8000,   24800,      2700,       120000],
+            [36000,     48000,      8000,   24800,      2700,       120000],
+            [45000,     60000,      10000,  31000,      3050,       150000],
+        ]
+    )
+    return city_requests
 
 
 def introduce_semesters():
-    return None
+    semesters = np.array(
+        [0,1,2,3,4,5,6,7,8,9,10]
+    )
+    return semesters
 
 
 def introduce_truck_types():
-    return None
+    truck_types = np.array(
+        [1, 2]
+    )
+    return truck_types
 
 
-def introduce_selling_cost():
-    return None
+def introduce_selling_cost(d_r, b_p_1, b_p_2):
+    selling_cost = np.array(
+        [
+            #camion de type 1
+            [b_p_1/(1+d_r) ^ 0,
+             b_p_1/(1+d_r) ^ 0.5,
+             b_p_1/(1+d_r) ^ 1,
+             b_p_1/(1+d_r) ^ 1.5,
+             b_p_1/(1+d_r) ^ 2,
+             b_p_1/(1+d_r) ^ 2.5,
+             b_p_1/(1+d_r) ^ 3,
+             b_p_1/(1+d_r) ^ 3.5,
+             b_p_1/(1+d_r) ^ 4,
+             b_p_1/(1+d_r) ^ 4.5,
+             b_p_1/(1+d_r) ^ 5],
+            #camion de type 2
+            [b_p_2 / (1 + d_r) ^ 0,
+             b_p_2 / (1 + d_r) ^ 0.5,
+             b_p_2 / (1 + d_r) ^ 1,
+             b_p_2 / (1 + d_r) ^ 1.5,
+             b_p_2 / (1 + d_r) ^ 2,
+             b_p_2 / (1 + d_r) ^ 2.5,
+             b_p_2 / (1 + d_r) ^ 3,
+             b_p_2 / (1 + d_r) ^ 3.5,
+             b_p_2 / (1 + d_r) ^ 4,
+             b_p_2 / (1 + d_r) ^ 4.5,
+             b_p_2 / (1 + d_r) ^ 5]
+        ]
+    )
+    return selling_cost
