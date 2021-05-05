@@ -40,11 +40,14 @@ def introduce_city_requests():
             [45000,     60000,      10000,  31000,      3050,       150000],
         ]
     )
-    return
+    return city_requests
 
 
 def introduce_semesters():
-    return None
+    semesters = np.array(
+        [0,1,2,3,4,5,6,7,8,9,10]
+    )
+    return semesters
 
 
 def introduce_truck_types():
