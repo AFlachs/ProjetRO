@@ -23,8 +23,23 @@ def introduce_distances():
 
 
 def introduce_city_requests():
-    # TODO : créer un tableau ayant une dimension "temps" (il en faut 10, 1 par semestre) et une dimension
+    # Tableau ayant une dimension "temps" (il en faut 10, 1 par semestre) et une dimension
     # villes, puis le remplir correctement
+    city_requests = np.array(
+        [   # Anvers    Charleroi   Gand    Bruxelles   Hasselt     Liege
+            [0,         0,          0,      0,          0,          0],
+            [0,         0,          0,      0,          0,          0],
+            [9000,      12000,      2000,   6200,       350,        30000],
+            [9000,      12000,      2000,   6200,       1650,       30000],
+            [18000,     24000,      4000,   12400,      2000,       60000],
+            [18000,     24000,      4000,   12400,      2000,       60000],
+            [27000,     36000,      6000,   18600,      2350,       90000],
+            [27000,     36000,      6000,   18600,      2350,       90000],
+            [36000,     48000,      8000,   24800,      2700,       120000],
+            [36000,     48000,      8000,   24800,      2700,       120000],
+            [45000,     60000,      10000,  31000,      3050,       150000],
+        ]
+    )
     return
 
 
