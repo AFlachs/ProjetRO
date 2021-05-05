@@ -3,17 +3,21 @@ from pulp import LpMaximize, LpProblem, LpStatus, lpSum, LpVariable
 import introduceProblem
 import costs
 
-distances = introduceProblem.introduce_distances()
-requests = introduceProblem.introduce_city_requests()
-cities = introduceProblem.introduce_cities()
-transport_types = introduceProblem.introduce_truck_types()
-semesters = introduceProblem.introduce_semesters()
-selling_cost = introduceProblem.introduce_selling_cost()
+
 v_moy = 70              # km/h
 work_time = 8           # heures
 delivery_waiting = 1    # heures
 max_capacity_1 = 16.5   # Tonnes
 max_capacity_2 = 5.5    # Tonnes
+depreciation_rate = 0.2 #pas d'unité
+buying_price_1 = 40000  #euros
+buying_price_2 = 50000  #euros
+distances = introduceProblem.introduce_distances()
+requests = introduceProblem.introduce_city_requests()
+cities = introduceProblem.introduce_cities()
+transport_types = introduceProblem.introduce_truck_types()
+semesters = introduceProblem.introduce_semesters()
+selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1, buying_price_2)
 
 
 x = list(list(list(list)))   # x_vj^cf -> camion passe ou pas
