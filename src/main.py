@@ -42,7 +42,7 @@ model += (3*x1 + x2 + 2*x3 <= 30, 'Constraint 2')
 for c in range(len(y)):
     for f in range(len(y[0])):
         for v in range(len(y[0][0])):
-            for j in range(len(y[0][0][0]))):
+            for j in range(len(y[0][0][0])):
                 model += (y[c][f][v][j] <= x[c][f][v][j], 'Produit de binaires')
                 model += (y[c][f][v][j] <= x[c][f][len(x)-1][j], 'Produit de binaires')  # indice d'anvers
                 model += (y[c][f][v][j] >= x[v] + x[len(x)-1] - 1, 'Produit de binaires')
