@@ -18,9 +18,14 @@ def salary(x, y, distances, V_moy):
 
 
 def maintainance(n):
-    return 2000*n
+    return 2000 * n
 
 
-def fuel(x, distances):
-    l = 0.35  # consommation d'essence par kilomètre
-    c_e = 1.5 # Prix du litre
+def fuel(x, y, distances):
+    l = 0.35    # consommation d'essence par kilomètre
+    c_e = 1.5   # Prix du litre
+    return sum(l * c_e * distances_camion(x, y, distances, c, j) * x[c][f][v][j]
+               for c in range(len(x))
+               for f in range(len(x[0]))
+               for v in range(len(x[0][0]))
+               for j in range(len(x[0][0][0])))
