@@ -27,7 +27,7 @@ def salary(x, y, distances, V_moy):
 
 
 def maintainance(n):
-    return 2000 * n
+    return 1000 * n
 
 
 def fuel(x, y, distances):
