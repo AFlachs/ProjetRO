@@ -6,6 +6,7 @@ import costs
 
 v_moy = 70              # km/h
 work_time = 8           # heures
+tau = 1                 # heures
 delivery_waiting = 1    # heures
 max_capacity_1 = 16.5   # Tonnes
 max_capacity_2 = 5.5    # Tonnes
@@ -48,6 +49,6 @@ for c in range(len(y)):
                 model += (y[c][f][v][j] >= x[v] + x[len(x)-1] - 1, 'Produit de binaires')
 
 
-model += costs.salary(x, distances) + costs.maintainance(x) + costs.fuel(x), 'Objective Function'
+model += costs.salary(x, y, distances, v_moy) + costs.maintainance(x, semesters) + costs.fuel(x, distances, y), 'Objective Function '
 
 status = model.solve(solver=GLPK(msg=True, keepFiles=True))

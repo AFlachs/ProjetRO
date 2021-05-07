@@ -1,6 +1,6 @@
 import numpy as np
 
-cities_list = [ "Anvers", "Charleroi", "Gand", "Bruxelles", "Hasselt", "Liege"]
+cities_list = ["Anvers", "Charleroi", "Gand", "Bruxelles", "Hasselt", "Liege"]
 
 
 def introduce_cities():
