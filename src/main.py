@@ -12,6 +12,9 @@ max_capacity_2 = 5.5    # Tonnes
 depreciation_rate = 0.2 #pas d'unité
 buying_price_1 = 40000  #euros
 buying_price_2 = 50000  #euros
+max_trucks = 30         # nombre de camions
+max_times_in_city = 3   # nombre de fois max qu'un camion peut passer dans une ville par jour
+business_days = 1270    # nombre de jours
 distances = introduceProblem.introduce_distances()
 requests = introduceProblem.introduce_city_requests()
 cities = introduceProblem.introduce_cities()
@@ -30,9 +33,21 @@ n = list()                   # n_s -> nombre de camions au semestre s
 #### PAS A NOUS #####
 model = LpProblem(name="Demo", sense=LpMaximize)
 
-x1 = LpVariable('x_1', lowBound=0)
-x2 = LpVariable('x_2', lowBound=0, cat='Continuous')
-x3 = LpVariable('x_3', lowBound=0)
+x = [LpVariable('x_vj^cf', lowBound=0, cat='Binary')
+        for c in range(max_trucks)
+        for f in range(max_times_in_city)
+        for v in range(len(cities))
+        for j in range(business_days)]
+y = [LpVariable('y', lowBound=0, cat='Binary')
+        for c in range(max_trucks)
+        for f in range(max_times_in_city)
+        for v in range(len(cities))
+        for j in range(business_days)]
+p = [LpVariable('p', lowBound=1, upBound=2, cat='Integer')
+        for c in range(max_trucks)
+        for j in range(business_days)]
+
+n=LpVariable('n', lowBound=0, upBound=max_trucks)
 
 
 model += (2*x1 + x2 + x3 <= 20, 'Constraint 1')
