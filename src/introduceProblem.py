@@ -52,7 +52,9 @@ def introduce_semesters():
 
 def introduce_truck_types():
     truck_types = np.array(
-        [1, 2]
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+         2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
     )
     return truck_types
 
