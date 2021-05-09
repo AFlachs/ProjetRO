@@ -20,19 +20,16 @@ requests = introduceProblem.introduce_city_requests()
 cities = introduceProblem.introduce_cities()
 transport_types = introduceProblem.introduce_truck_types()
 semesters = introduceProblem.introduce_semesters()
-selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1, buying_price_2)
+selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1,
+                                                       buying_price_2)  # cost[type][age]
 
 # TODO : introduce variables
 x = list(list(list(list)))  # x^cf_vj -> camion passe ou pas, x[c][f][v][j]
 y = list(list(list(list)))  # y^cf_vj -> produit x_v * x_a
 p = list(list)  # p_cj -> type principal transporté
-n = list()  # n_s -> nombre de camions au semestre s
 
 #### PAS A NOUS #####
 model = LpProblem(name="Demo", sense=LpMaximize)
-
-for s in semesters:
-    n[s] = LpVariable('n', lowBound=0, upBound=max_trucks)
 
 for c in range(max_trucks):
     for j in range(business_days):
@@ -47,11 +44,10 @@ for c in range(max_trucks):
         p[c][j] = LpVariable('p', cat='Binary')
 
         # Temps de travail inférieur à worktime
-        model += (costs.distances_camion(x, y, distances, c, j) - 1 + tau * sum(x[c][f][v][j]
-                                                                                for f in range(max_times_in_city)
-                                                                                for v in cities) <= work_time,
+        model += (costs.distances_camion(x, y, distances, c, j) - 1 + tau * lpSum(x[c][f][v][j]
+                                                                                  for f in range(max_times_in_city)
+                                                                                  for v in cities) <= work_time,
                   'Travail journalier')
-
 
 model += costs.salary(x, y, distances, v_moy) + costs.maintainance(x, semesters) + costs.fuel(x, distances,
                                                                                               y), 'Objective Function '
