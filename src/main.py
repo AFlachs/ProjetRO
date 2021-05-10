@@ -27,6 +27,7 @@ selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying
 x = list(list(list(list)))  # x^cf_vj -> camion passe ou pas, x[c][f][v][j]
 y = list(list(list(list)))  # y^cf_vj -> produit x_v * x_a
 p = list(list)  # p_cj -> type principal transporté
+pos = list(list) #pos_cs -> camion possédé ou non,
 
 #### PAS A NOUS #####
 model = LpProblem(name="Demo", sense=LpMaximize)
@@ -41,6 +42,8 @@ for c in range(max_trucks):
                 model += (y[c][f][v][j] <= x[c][f][v][j], 'Produit de binaires')
                 model += (y[c][f][v][j] <= x[c][f][len(x) - 1][j], 'Produit de binaires')  # indice d'anvers
                 model += (y[c][f][v][j] >= x[v] + x[len(x) - 1] - 1, 'Produit de binaires')
+
+                #model += (x[c][f][v][j] >=)
         p[c][j] = LpVariable('p', cat='Binary')
 
         # Temps de travail inférieur à worktime
