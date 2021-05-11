@@ -43,7 +43,7 @@ for c in range(max_trucks):
                 model += (y[c][f][v][j] <= x[c][f][len(x) - 1][j], 'Produit de binaires')  # indice d'anvers
                 model += (y[c][f][v][j] >= x[v] + x[len(x) - 1] - 1, 'Produit de binaires')
 
-                #model += (x[c][f][v][j] >=)
+                #model += (x[c][f][v][j] >=pos[c][s])
         p[c][j] = LpVariable('p', cat='Binary')
 
         # Temps de travail inférieur à worktime
