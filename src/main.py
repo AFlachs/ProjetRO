@@ -1,6 +1,7 @@
 from pulp import GLPK
-from pulp import LpMaximize, LpProblem, LpStatus, lpSum, LpVariable
+from pulp import LpMinimize, LpProblem, LpStatus, lpSum, LpVariable
 import introduceProblem
+import numpy as np
 import costs
 
 v_moy = 70  # km/h
@@ -17,42 +18,56 @@ max_times_in_city = 3  # nombre de fois max qu'un camion peut passer dans une vi
 business_days = 1270  # nombre de jours
 distances = introduceProblem.introduce_distances()
 requests = introduceProblem.introduce_city_requests()
-cities = introduceProblem.introduce_cities()
+cities_number = 6
 transport_types = introduceProblem.introduce_truck_types()
 semesters = introduceProblem.introduce_semesters()
 selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1,
                                                        buying_price_2)  # cost[type][age]
 
 # TODO : introduce variables
-x = list(list(list(list)))  # x^cf_vj -> camion passe ou pas, x[c][f][v][j]
-y = list(list(list(list)))  # y^cf_vj -> produit x_v * x_a
-p = list(list)  # p_cj -> type principal transporté
-pos = list(list) #pos_cs -> camion possédé ou non,
+
+pos = list(list())  # pos_cs -> camion possédé ou non,
 
 #### PAS A NOUS #####
-model = LpProblem(name="Demo", sense=LpMaximize)
+model = LpProblem(name="Demo", sense=LpMinimize)
 
+x = [[[[LpVariable('x_{c},{f},{v},{j}', cat='Binary') for j in range(business_days)]
+       for v in range(cities_number)]
+      for f in range(max_times_in_city)]
+     for c in range(max_trucks)
+     ]  # x_cf^vj
+
+y = [[[[LpVariable('y_{c},{f},{v},{j}', cat='Binary') for j in range(business_days)]
+       for v in range(cities_number)]
+      for f in range(max_times_in_city)]
+     for c in range(max_trucks)
+     ]  # x_cf^vj
+
+p = [[LpVariable('p_{c},{j}', cat='Binary') for j in range(business_days)] for c in range(max_trucks)]
+
+
+# print(x)
 for c in range(max_trucks):
     for j in range(business_days):
         for f in range(max_times_in_city):
-            for v in cities:
-                x[c][f][v][j] = LpVariable('x', cat='Binary')
-                y[c][f][v][j] = LpVariable('y', cat='Binary')
+            for v in range(cities_number):
+                model += (y[c][f][v][j] <= x[c][f][v][j],
+                          'Produit de binaires (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
+                model += (y[c][f][v][j] <= x[c][f][cities_number - 1][j],
+                          'Produit de binaires (b) {},{},{},{}'.format(str(c), str(f), str(v),
+                                                                       str(j)))  # indice d'anvers
+                model += (y[c][f][v][j] >= x[c][f][v][j] + x[c][f][cities_number - 1][j] - 1,
+                          'Produit de binaires (c) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
 
-                model += (y[c][f][v][j] <= x[c][f][v][j], 'Produit de binaires')
-                model += (y[c][f][v][j] <= x[c][f][len(x) - 1][j], 'Produit de binaires')  # indice d'anvers
-                model += (y[c][f][v][j] >= x[v] + x[len(x) - 1] - 1, 'Produit de binaires')
-
-                #model += (x[c][f][v][j] >=)
-        p[c][j] = LpVariable('p', cat='Binary')
+                # model += (x[c][f][v][j] >=)
 
         # Temps de travail inférieur à worktime
         model += (costs.distances_camion(x, y, distances, c, j) - 1 + tau * lpSum(x[c][f][v][j]
                                                                                   for f in range(max_times_in_city)
-                                                                                  for v in cities) <= work_time,
-                  'Travail journalier')
+                                                                                  for v in range(cities_number)) <= work_time,
+                  'Travail journalier {},{}'.format(str(c), str(j)))
 
 model += costs.salary(x, y, distances, v_moy) + costs.maintainance(x, semesters) + costs.fuel(x, distances,
                                                                                               y), 'Objective Function '
 
-status = model.solve(solver=GLPK(msg=True, keepFiles=True))
+status = model.solve(solver=GLPK(msg=True, keepFiles=True),  timeLimit=300)
