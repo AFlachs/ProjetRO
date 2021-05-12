@@ -45,6 +45,10 @@ p = [[LpVariable('p_{},{}'.format(c, j), cat='Binary', lowBound=0) for j in rang
      range(max_trucks)]
 # p_cj
 
+#q = [[LpVariable('q_{},{}'.format(c, j), cat='Binary', lowBound=0) for j in range(business_days - 1)] for c in
+#     range(max_trucks)]
+# q_cj=p_cj*p_cj+1
+
 pos = [[LpVariable('pos_{},{}'.format(str(c), str(j)), cat='Binary', lowBound=0) for j in range(business_days)] for c in
        range(max_trucks)]
 # pos_cs
@@ -93,6 +97,18 @@ for c in range(max_trucks):
                           'Prod bin y, p (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
                 model += (m[c][f][v][j] <= 0.5 * (p[c][j] + y[c][f][v][j]),
                           'Prod bin y, p  (b) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
+
+        #if j > 0:
+        #    if j < business_days - 2:
+        #        model += (1 >= lpSum(x[c][f][v][jp] for jp in range(j, j + 3) for f in range(max_times_in_city)
+        #                             for v in range(cities_number)) / (3 * max_times_in_city * cities_number)
+        #                  + p[c][j] + p[c][j - 1] - 2 * q[c][j - 1])
+        #    else:
+        #        model += p[c][j] >= p[c][j - 1]
+        #        model += p[c][j] <= p[c][j - 1]
+        #if j < business_days - 1:
+        #    model += q[c][j] >= p[c][j] + p[c][j + 1] - 1
+        #    model += q[c][j] <= 0.5 * (p[c][j] + p[c][j + 1])
 
         # Temps de travail inférieur à worktime
         model += (costs.distances_camion(x, y, distances, c, j) - 1 + tau * lpSum(x[c][f][v][j]
