@@ -23,9 +23,6 @@ semesters = introduceProblem.introduce_semesters()
 selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1,
                                                        buying_price_2)  # cost[type][age]
 
-# TODO : introduce variables
-
-pos = list(list())  # pos_cs -> camion possédé ou non,
 
 #### PAS A NOUS #####
 model = LpProblem(name="Demo", sense=LpMinimize)
@@ -86,10 +83,20 @@ for c in range(max_trucks):
 
     print("Camion : " + str(c))
 
-for v in range(cities_number):
-    for s in semesters:
+for s in semesters:
+    for v in range(cities_number):
         # quantity(v, s, x, p, y) >= requests[s][v]
         a = 1
+
+    # Contraintes vente :
+    for c in range(max_trucks):
+        for a in range(len(V[0])):
+            if s-a-1 >= 0:
+                for i in range(s-a, s):
+                    model += V[c][a][s] <= pos[c][i]
+                model += V[c][a][s] <= 1 - pos[c][s]
+                model += V[c][a][s] <= 1 - pos[c][s-a-1]
+                model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s-a, s)) - pos[c][s] - a + 1
 
 print("Initialisation terminée")
 model += costs.salary(x, y, distances, v_moy) + costs.maintainance(x, semesters) + costs.fuel(x, distances,
