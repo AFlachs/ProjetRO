@@ -74,6 +74,7 @@ z = [[[[LpVariable('z_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0)
 
 for c in range(max_trucks):
     for j in range(business_days):
+        s = j % (business_days // len(semesters))  # Semestre actuel
         for f in range(max_times_in_city):
             for v in range(cities_number):
                 model += (y[c][f][v][j] >= x[c][f][v][j] + x[c][f][0][j] - 1,
@@ -82,9 +83,7 @@ for c in range(max_trucks):
                           'Prod bin (b) {},{},{},{}'.format(str(c), str(f), str(v),
                                                                        str(j)))  # 0 est l'indice d'anvers
 
-                s = j % (business_days // len(semesters))  # Semestre actuel
                 model += pos[c][s] >= x[c][f][v][j]
-                # model += (x[c][f][v][j] >=)
 
                 model += (z[c][f][v][j] >= p[c][j] + x[c][f][v][j] - 1,
                           'Prod bin x, p (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
@@ -111,15 +110,15 @@ for j in range(business_days):
     for f in range(max_times_in_city):
         for c1 in range(max_trucks_type1):
             model += (lpSum(x[c1][f][v][j]
-                            for v in range(cities_number)) <= 1)
+                            for v in range(cities_number)) <= 1) # Une ville par passage pour type 1
         for c2 in range(max_trucks_type1, max_trucks_type2):
             model += (lpSum(x[c2][f][v][j]
-                            for v in
+                            for v in        # Max une ville pour type 2 sans compter Anvers
                             range(1, cities_number)) <= 1)  # on fait la boucle sur toutes les villes sauf Anvers
 
 for s in semesters:
     for v in range(cities_number):
-        # quantity(v, s, x, p, y) >= requests[s][v]
+        # quantity(v, s, x, p, y) >= requests[s][v] #TODO
         a = 1
 
     # Contraintes vente :
@@ -134,7 +133,6 @@ for s in semesters:
 
 
 print("Initialisation terminée")
-input("Press enter")
 
 model += costs.salary(x, y, distances, v_moy) + costs.maintainance(x, semesters) + costs.fuel(x, y, distances,
                                                                                               ), 'Objective Function '
