@@ -47,7 +47,7 @@ p = [LpVariable('p', lowBound=1, upBound=2, cat='Integer')
         for c in range(max_trucks)
         for j in range(business_days)]
 
-n=LpVariable('n', lowBound=0, upBound=max_trucks)
+n=LpVariable('n', lowBound=0, upBound=max_trucks, cat='Integer')
 
 
 model += (2*x1 + x2 + x3 <= 20, 'Constraint 1')
