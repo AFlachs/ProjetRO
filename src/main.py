@@ -45,7 +45,10 @@ y = [[[[LpVariable('y_{c},{f},{v},{j}', cat='Binary') for j in range(business_da
 
 p = [[LpVariable('p_{c},{j}', cat='Binary') for j in range(business_days)] for c in range(max_trucks)]
 
-
+V = [[[LpVariable('V_{c},{s},{a}', cat='Binary')
+       for a in range(semesters)]
+      for s in range(semesters)]
+     for c in range(max_trucks)]
 # print(x)
 for c in range(max_trucks):
     for j in range(business_days):
@@ -64,10 +67,11 @@ for c in range(max_trucks):
         # Temps de travail inférieur à worktime
         model += (costs.distances_camion(x, y, distances, c, j) - 1 + tau * lpSum(x[c][f][v][j]
                                                                                   for f in range(max_times_in_city)
-                                                                                  for v in range(cities_number)) <= work_time,
+                                                                                  for v in
+                                                                                  range(cities_number)) <= work_time,
                   'Travail journalier {},{}'.format(str(c), str(j)))
 
 model += costs.salary(x, y, distances, v_moy) + costs.maintainance(x, semesters) + costs.fuel(x, distances,
                                                                                               y), 'Objective Function '
 
-status = model.solve(solver=GLPK(msg=True, keepFiles=True),  timeLimit=300)
+status = model.solve(solver=GLPK(msg=True, keepFiles=True), timeLimit=300)
