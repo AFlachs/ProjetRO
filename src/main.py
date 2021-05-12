@@ -13,6 +13,8 @@ depreciation_rate = 0.2  # pas d'unité
 buying_price_1 = 40000  # euros
 buying_price_2 = 50000  # euros
 max_trucks = 30  # nombre de camions
+max_trucks_type1 = 20  # nombre max de camions de type 1
+max_trucks_type2 = 10  # nombre max de camions de type 2
 max_times_in_city = 3  # nombre de fois max qu'un camion peut passer dans une ville par jour
 business_days = 1270  # nombre de jours
 distances = introduceProblem.introduce_distances()
@@ -20,6 +22,7 @@ requests = introduceProblem.introduce_city_requests()  # requests[s][v]
 cities_number = 6
 transport_types = introduceProblem.introduce_truck_types()
 semesters = introduceProblem.introduce_semesters()
+semesters_number = len(semesters)
 selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1,
                                                        buying_price_2)  # cost[type][age]
 
@@ -47,12 +50,19 @@ pos = [[LpVariable('pos_{},{}'.format(str(c), str(j)), cat='Binary') for j in ra
 # pos_cs
 
 V = [[[LpVariable('V_{c},{s},{a}', cat='Binary')
-       for a in range(semesters)]
-      for s in range(semesters)]
+       for a in range(semesters_number)]
+      for s in range(semesters_number)]
      for c in range(max_trucks)]
 # V_cas
 A = [[LpVariable('A_{}{}'.format(str(c), str(s))) for s in semesters] for c in range(max_trucks)]
 # A_cs
+
+z = [[[[LpVariable('z_{c},{f},{v},{j}', cat='Binary') for j in range(business_days)]
+       for v in range(cities_number)]
+      for f in range(max_times_in_city)]
+     for c in range(max_trucks)
+     ]
+# print(x)
 
 
 for c in range(max_trucks):
@@ -70,6 +80,10 @@ for c in range(max_trucks):
                 s = j % (business_days // len(semesters))  # Semestre actuel
                 model += pos[c][s] >= x[c][f][v][j]
                 # model += (x[c][f][v][j] >=)
+                model += (z[c][f][v][j] >= p[c][j] + x[c][f][v][j] - 1,
+                          'Produit de binaires x et p (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
+                model += (z[c][f][v][j] <= 0.5 * (p[c][j] + x[c][f][v][j]),
+                          'Produit de binaires x et p (b) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
 
         # Temps de travail inférieur à worktime
         model += (costs.distances_camion(x, y, distances, c, j) - 1 + tau * lpSum(x[c][f][v][j]
@@ -82,6 +96,15 @@ for c in range(max_trucks):
             model += pos[c][s] <= pos[c - 1][s]
 
     print("Camion : " + str(c))
+for j in range(business_days):
+    for f in range(max_times_in_city):
+        for c1 in range(max_trucks_type1):
+            model += (lpSum(x[c1][f][v][j]
+                            for v in range(cities_number)) <= 1)
+        for c2 in range(max_trucks_type1, max_trucks_type2):
+            model += (lpSum(x[c2][f][v][j]
+                            for v in range(cities_number-1)) <= 1) #on fait la boucle sur toutes les villes sauf Anvers
+
 
 for s in semesters:
     for v in range(cities_number):
