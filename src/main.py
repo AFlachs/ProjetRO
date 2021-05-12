@@ -74,7 +74,7 @@ z = [[[[LpVariable('z_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0)
      for c in range(max_trucks)
      ]
 # z_cf^vj
-print('Romanus eunt domus')
+print('Nobody Expects Spanish Inquisition')
 
 for c in range(max_trucks):
     for j in range(business_days):
@@ -116,9 +116,7 @@ for c in range(max_trucks):
                                                                                   for v in
                                                                                   range(cities_number)) <= work_time,
                   'WorkTime {},{}'.format(str(c), str(j)))
-    if c >= 1:
-        for s in semesters:
-            model += pos[c][s] <= pos[c - 1][s]
+
 
     print("Camion : " + str(c))
 
@@ -148,6 +146,10 @@ for s in semesters:
                 model += V[c][a][s] <= 1 - pos[c][s]
                 model += V[c][a][s] <= 1 - pos[c][s - a - 1]
                 model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s - a, s)) - pos[c][s] - a + 1
+    for c1 in range(1,max_trucks_type1):
+        model += pos[c1][s] <= pos[c1 - 1][s]
+    for c2 in range(max_trucks_type1+1, max_trucks_type2):
+        model += pos[c2][s] <= pos[c2 - 1][s]
 
 print("Initialisation terminée")
 
