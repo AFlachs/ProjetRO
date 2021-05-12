@@ -26,7 +26,6 @@ semesters_number = len(semesters)
 selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1,
                                                        buying_price_2)  # cost[type][age]
 
-
 #### PAS A NOUS #####
 model = LpProblem(name="Demo", sense=LpMinimize)
 
@@ -42,7 +41,8 @@ y = [[[[LpVariable('y_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0)
      for c in range(max_trucks)
      ]  # y_cf^vj
 
-p = [[LpVariable('p_{},{}'.format(c, j), cat='Binary', lowBound=0) for j in range(business_days)] for c in range(max_trucks)]
+p = [[LpVariable('p_{},{}'.format(c, j), cat='Binary', lowBound=0) for j in range(business_days)] for c in
+     range(max_trucks)]
 # p_cj
 
 pos = [[LpVariable('pos_{},{}'.format(str(c), str(j)), cat='Binary', lowBound=0) for j in range(business_days)] for c in
@@ -72,7 +72,6 @@ z = [[[[LpVariable('z_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0)
 # z_cf^vj
 print('Romanus eunt domus')
 
-
 for c in range(max_trucks):
     for j in range(business_days):
         s = j % (business_days // len(semesters))  # Semestre actuel
@@ -82,7 +81,7 @@ for c in range(max_trucks):
                           'Prod bin (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
                 model += (y[c][f][v][j] <= 0.5 * (x[c][f][v][j] + x[c][f][0][j]),
                           'Prod bin (b) {},{},{},{}'.format(str(c), str(f), str(v),
-                                                                       str(j)))  # 0 est l'indice d'anvers
+                                                            str(j)))  # 0 est l'indice d'anvers
 
                 model += pos[c][s] >= x[c][f][v][j]
 
@@ -111,10 +110,10 @@ for j in range(business_days):
     for f in range(max_times_in_city):
         for c1 in range(max_trucks_type1):
             model += (lpSum(x[c1][f][v][j]
-                            for v in range(cities_number)) <= 1) # Une ville par passage pour type 1
+                            for v in range(cities_number)) <= 1)  # Une ville par passage pour type 1
         for c2 in range(max_trucks_type1, max_trucks_type2):
             model += (lpSum(x[c2][f][v][j]
-                            for v in        # Max une ville pour type 2 sans compter Anvers
+                            for v in  # Max une ville pour type 2 sans compter Anvers
                             range(1, cities_number)) <= 1)  # on fait la boucle sur toutes les villes sauf Anvers
 
 for s in semesters:
@@ -125,18 +124,18 @@ for s in semesters:
     # Contraintes vente :
     for c in range(max_trucks):
         for a in range(len(V[0])):
-            if s-a-1 >= 0:
-                for i in range(s-a, s):
+            if s - a - 1 >= 0:
+                for i in range(s - a, s):
                     model += V[c][a][s] <= pos[c][i]
                 model += V[c][a][s] <= 1 - pos[c][s]
-                model += V[c][a][s] <= 1 - pos[c][s-a-1]
-                model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s-a, s)) - pos[c][s] - a + 1
-
+                model += V[c][a][s] <= 1 - pos[c][s - a - 1]
+                model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s - a, s)) - pos[c][s] - a + 1
 
 print("Initialisation terminée")
 
-model += costs.salary(x, y, distances, v_moy) + costs.maintainance(x, semesters) + costs.fuel(x, y, distances,
-                                                                                              ), 'Objective Function '
+model += costs.salary(x, y, distances, v_moy) + costs.maintainance(
+    sum(pos[c][s] for c in range(max_trucks) for s in semesters)) + costs.fuel(x, y, distances,
+                                                                                          ), 'Objective Function '
 
 input("Press enter")
 print("Solving")

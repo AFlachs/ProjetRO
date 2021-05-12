@@ -25,8 +25,8 @@ def salary(x, y, distances, V_moy):
     return res * alpha
 
 
-def maintainance(n, semesters):
-    return lpSum(1000 * n[s] for s in semesters)
+def maintainance(n):
+    return 1000 * n
 
 
 def fuel(x, y, distances):
