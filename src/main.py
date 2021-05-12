@@ -70,6 +70,7 @@ z = [[[[LpVariable('z_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0)
      for c in range(max_trucks)
      ]
 # z_cf^vj
+print('Romanus eunt domus')
 
 
 for c in range(max_trucks):
