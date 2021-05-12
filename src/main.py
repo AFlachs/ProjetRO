@@ -1,7 +1,6 @@
 from pulp import GLPK
-from pulp import LpMinimize, LpProblem, LpStatus, lpSum, LpVariable
+from pulp import LpMinimize, LpProblem, lpSum, LpVariable
 import introduceProblem
-import numpy as np
 import costs
 
 v_moy = 70  # km/h
@@ -26,7 +25,6 @@ selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying
 
 # TODO : introduce variables
 
-pos = list(list())  # pos_cs -> camion possédé ou non,
 
 #### PAS A NOUS #####
 model = LpProblem(name="Demo", sense=LpMinimize)
@@ -41,12 +39,17 @@ y = [[[[LpVariable('y_{c},{f},{v},{j}', cat='Binary') for j in range(business_da
        for v in range(cities_number)]
       for f in range(max_times_in_city)]
      for c in range(max_trucks)
-     ]  # x_cf^vj
+     ]  # y_cf^vj
 
-p = [[LpVariable('p_{c},{j}', cat='Binary') for j in range(business_days)] for c in range(max_trucks)]
+p = [[LpVariable('p_{c},{j}', cat='Binary') for j in range(business_days)] for c in range(max_trucks)] # p_cj
+
+pos = [[LpVariable('pos_{},{}'.format(str(c), str(j)), cat='Binary') for j in range(business_days)] for c in range(max_trucks)]
+# pos_cs
+
+A = [[LpVariable('A_{}{}'.format(str(c), str(s))) for s in semesters] for c in range(max_trucks)]
+# A_cs
 
 
-# print(x)
 for c in range(max_trucks):
     for j in range(business_days):
         for f in range(max_times_in_city):
@@ -66,8 +69,11 @@ for c in range(max_trucks):
                                                                                   for f in range(max_times_in_city)
                                                                                   for v in range(cities_number)) <= work_time,
                   'Travail journalier {},{}'.format(str(c), str(j)))
-
+    print("Camion : " + str(c))
+print("Initialisation terminée")
 model += costs.salary(x, y, distances, v_moy) + costs.maintainance(x, semesters) + costs.fuel(x, distances,
                                                                                               y), 'Objective Function '
 
+print("Solving")
+input()
 status = model.solve(solver=GLPK(msg=True, keepFiles=True),  timeLimit=300)
