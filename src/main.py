@@ -25,6 +25,7 @@ selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying
 
 # TODO : introduce variables
 
+pos = list(list())  # pos_cs -> camion possédé ou non,
 
 #### PAS A NOUS #####
 model = LpProblem(name="Demo", sense=LpMinimize)
@@ -48,6 +49,11 @@ pos = [[LpVariable('pos_{},{}'.format(str(c), str(j)), cat='Binary') for j in ra
        range(max_trucks)]
 # pos_cs
 
+V = [[[LpVariable('V_{c},{s},{a}', cat='Binary')
+       for a in range(semesters)]
+      for s in range(semesters)]
+     for c in range(max_trucks)]
+# V_cas
 A = [[LpVariable('A_{}{}'.format(str(c), str(s))) for s in semesters] for c in range(max_trucks)]
 # A_cs
 
