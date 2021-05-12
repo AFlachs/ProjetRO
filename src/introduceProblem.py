@@ -1,10 +1,9 @@
 import numpy as np
+import math
 
-cities_list = [ "Anvers", "Charleroi", "Gand", "Bruxelles", "Hasselt", "Liege"]
+cities_list = ["Anvers", "Charleroi", "Gand", "Bruxelles", "Hasselt", "Liege"]
 
 
-def introduce_cities():
-    return np.linspace(1, len(cities_list), len(cities_list))
 
 
 def introduce_distances():
@@ -52,7 +51,9 @@ def introduce_semesters():
 
 def introduce_truck_types():
     truck_types = np.array(
-        [1, 2]
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+         2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
     )
     return truck_types
 
@@ -61,29 +62,9 @@ def introduce_selling_cost(d_r, b_p_1, b_p_2):
     selling_cost = np.array(
         [
             #camion de type 1
-            [b_p_1/(1+d_r) ^ 0,
-             b_p_1/(1+d_r) ^ 0.5,
-             b_p_1/(1+d_r) ^ 1,
-             b_p_1/(1+d_r) ^ 1.5,
-             b_p_1/(1+d_r) ^ 2,
-             b_p_1/(1+d_r) ^ 2.5,
-             b_p_1/(1+d_r) ^ 3,
-             b_p_1/(1+d_r) ^ 3.5,
-             b_p_1/(1+d_r) ^ 4,
-             b_p_1/(1+d_r) ^ 4.5,
-             b_p_1/(1+d_r) ^ 5],
+            [math.pow(b_p_1/(1+d_r), i/2) for i in range(10)] + [ math.pow(b_p_1/(1+d_r), 5) ],
             #camion de type 2
-            [b_p_2 / (1 + d_r) ^ 0,
-             b_p_2 / (1 + d_r) ^ 0.5,
-             b_p_2 / (1 + d_r) ^ 1,
-             b_p_2 / (1 + d_r) ^ 1.5,
-             b_p_2 / (1 + d_r) ^ 2,
-             b_p_2 / (1 + d_r) ^ 2.5,
-             b_p_2 / (1 + d_r) ^ 3,
-             b_p_2 / (1 + d_r) ^ 3.5,
-             b_p_2 / (1 + d_r) ^ 4,
-             b_p_2 / (1 + d_r) ^ 4.5,
-             b_p_2 / (1 + d_r) ^ 5]
+            [math.pow(b_p_2/(1+d_r), i/2) for i in range(10)] + [ math.pow(b_p_2/(1+d_r), 5) ]
         ]
     )
     return selling_cost

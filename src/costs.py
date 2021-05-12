@@ -2,11 +2,11 @@ def distances_camion(x, y, distances, c, j):
     """
     Distance parcourue par un camion c le jour j
     """
-    first_part = sum(2 * x[c][f][v][j] * distances[v][len(distances)]
+    first_part = sum(2 * x[c][f][v][j] * distances[v][len(distances)-1]
                      for f in range(len(x[0]))
                      for v in range(len(x[0][0]))
                      )
-    second_part = sum(y[c][f][v][j] * (distances[v][0] + distances[0][len(distances)] - distances[v][len(distances)])
+    second_part = sum(y[c][f][v][j] * (distances[v][0] + distances[0][len(distances)-1] - distances[v][len(distances)-1])
                       for f in range(len(x[0]))
                       for v in range(len(x[0][0]))
                       )
@@ -26,8 +26,8 @@ def salary(x, y, distances, V_moy):
     )
 
 
-def maintainance(n):
-    return 1000 * n
+def maintainance(n, semesters):
+    return sum(1000 * n[s] for s in semesters)
 
 
 def fuel(x, y, distances):
