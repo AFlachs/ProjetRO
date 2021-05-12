@@ -16,7 +16,7 @@ max_trucks = 30  # nombre de camions
 max_times_in_city = 3  # nombre de fois max qu'un camion peut passer dans une ville par jour
 business_days = 1270  # nombre de jours
 distances = introduceProblem.introduce_distances()
-requests = introduceProblem.introduce_city_requests()
+requests = introduceProblem.introduce_city_requests()  # requests[s][v]
 cities_number = 6
 transport_types = introduceProblem.introduce_truck_types()
 semesters = introduceProblem.introduce_semesters()
@@ -29,21 +29,23 @@ selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying
 #### PAS A NOUS #####
 model = LpProblem(name="Demo", sense=LpMinimize)
 
-x = [[[[LpVariable('x_{c},{f},{v},{j}', cat='Binary') for j in range(business_days)]
+x = [[[[LpVariable('x_{},{},{},{}'.format(c, f, v, j), cat='Binary') for j in range(business_days)]
        for v in range(cities_number)]
       for f in range(max_times_in_city)]
      for c in range(max_trucks)
      ]  # x_cf^vj
 
-y = [[[[LpVariable('y_{c},{f},{v},{j}', cat='Binary') for j in range(business_days)]
+y = [[[[LpVariable('y_{},{},{},{}'.format(c, f, v, j), cat='Binary') for j in range(business_days)]
        for v in range(cities_number)]
       for f in range(max_times_in_city)]
      for c in range(max_trucks)
      ]  # y_cf^vj
 
-p = [[LpVariable('p_{c},{j}', cat='Binary') for j in range(business_days)] for c in range(max_trucks)] # p_cj
+p = [[LpVariable('p_{},{}'.format(c, j), cat='Binary') for j in range(business_days)] for c in range(max_trucks)]
+# p_cj
 
-pos = [[LpVariable('pos_{},{}'.format(str(c), str(j)), cat='Binary') for j in range(business_days)] for c in range(max_trucks)]
+pos = [[LpVariable('pos_{},{}'.format(str(c), str(j)), cat='Binary') for j in range(business_days)] for c in
+       range(max_trucks)]
 # pos_cs
 
 A = [[LpVariable('A_{}{}'.format(str(c), str(s))) for s in semesters] for c in range(max_trucks)]
@@ -62,18 +64,31 @@ for c in range(max_trucks):
                 model += (y[c][f][v][j] >= x[c][f][v][j] + x[c][f][cities_number - 1][j] - 1,
                           'Produit de binaires (c) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
 
+                s = j % (business_days // len(semesters))  # Semestre actuel
+                model += pos[c][s] >= x[c][f][v][j]
                 # model += (x[c][f][v][j] >=)
 
         # Temps de travail inférieur à worktime
         model += (costs.distances_camion(x, y, distances, c, j) - 1 + tau * lpSum(x[c][f][v][j]
                                                                                   for f in range(max_times_in_city)
-                                                                                  for v in range(cities_number)) <= work_time,
+                                                                                  for v in
+                                                                                  range(cities_number)) <= work_time,
                   'Travail journalier {},{}'.format(str(c), str(j)))
+    if c >= 1:
+        for s in semesters:
+            model += pos[c][s] <= pos[c - 1][s]
+
     print("Camion : " + str(c))
+
+for v in range(cities_number):
+    for s in semesters:
+        # quantity(v, s, x, p, y) >= requests[s][v]
+        a = 1
+
 print("Initialisation terminée")
 model += costs.salary(x, y, distances, v_moy) + costs.maintainance(x, semesters) + costs.fuel(x, distances,
                                                                                               y), 'Objective Function '
 
 print("Solving")
 input()
-status = model.solve(solver=GLPK(msg=True, keepFiles=True),  timeLimit=300)
+status = model.solve(solver=GLPK(msg=True, keepFiles=True), timeLimit=300)
