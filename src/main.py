@@ -57,12 +57,19 @@ V = [[[LpVariable('V_{c},{s},{a}', cat='Binary')
 A = [[LpVariable('A_{}{}'.format(str(c), str(s))) for s in semesters] for c in range(max_trucks)]
 # A_cs
 
+m = [[[[LpVariable('m_{c},{f},{v},{j}', cat='Binary') for j in range(business_days)]
+       for v in range(cities_number)]
+      for f in range(max_times_in_city)]
+     for c in range(max_trucks)
+     ]
+# m_cf^vj
+
 z = [[[[LpVariable('z_{c},{f},{v},{j}', cat='Binary') for j in range(business_days)]
        for v in range(cities_number)]
       for f in range(max_times_in_city)]
      for c in range(max_trucks)
      ]
-# print(x)
+# z_cf^vj
 
 
 for c in range(max_trucks):
@@ -84,6 +91,10 @@ for c in range(max_trucks):
                           'Produit de binaires x et p (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
                 model += (z[c][f][v][j] <= 0.5 * (p[c][j] + x[c][f][v][j]),
                           'Produit de binaires x et p (b) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
+                model += (m[c][f][v][j] >= p[c][j] + y[c][f][v][j] - 1,
+                          'Produit de binaires y et p (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
+                model += (m[c][f][v][j] <= 0.5 * (p[c][j] + y[c][f][v][j]),
+                          'Produit de binaires y et p (b) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
 
         # Temps de travail inférieur à worktime
         model += (costs.distances_camion(x, y, distances, c, j) - 1 + tau * lpSum(x[c][f][v][j]
