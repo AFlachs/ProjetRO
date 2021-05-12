@@ -123,6 +123,8 @@ for s in semesters:
 
     # Contraintes vente :
     for c in range(max_trucks):
+        model += A[c][s] <= 0.5 * (pos[c][s] + 1 - pos[c][s - 1])
+        model += A[c][s] >= pos[c][s] - pos[c][s - 1]
         for a in range(len(V[0])):
             if s - a - 1 >= 0:
                 for i in range(s - a, s):
@@ -135,7 +137,7 @@ print("Initialisation terminée")
 
 model += costs.salary(x, y, distances, v_moy) + costs.maintainance(
     sum(pos[c][s] for c in range(max_trucks) for s in semesters)) + costs.fuel(x, y, distances,
-                                                                                          ), 'Objective Function '
+                                                                               ), 'Objective Function '
 
 input("Press enter")
 print("Solving")
