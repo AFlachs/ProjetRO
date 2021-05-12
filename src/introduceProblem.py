@@ -4,8 +4,6 @@ import math
 cities_list = ["Anvers", "Charleroi", "Gand", "Bruxelles", "Hasselt", "Liege"]
 
 
-
-
 def introduce_distances():
     distances = np.array(
         [   # Anvers    Charleroi   Gand    Bruxelles   Hasselt     Liege
@@ -61,9 +59,9 @@ def introduce_truck_types():
 def introduce_selling_cost(d_r, b_p_1, b_p_2):
     selling_cost = np.array(
         [
-            #camion de type 1
+            # camion de type 1
             [math.pow(b_p_1/(1+d_r), i/2) for i in range(10)] + [ math.pow(b_p_1/(1+d_r), 5) ],
-            #camion de type 2
+            # camion de type 2
             [math.pow(b_p_2/(1+d_r), i/2) for i in range(10)] + [ math.pow(b_p_2/(1+d_r), 5) ]
         ]
     )
