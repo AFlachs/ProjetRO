@@ -90,8 +90,8 @@ for j in range(business_days):
                             for v in range(cities_number)) <= 1)
         for c2 in range(max_trucks_type1, max_trucks_type2):
             model += (lpSum(x[c2][f][v][j]
-                            for v in range(cities_number-1)) <= 1) #on fait la boucle sur toutes les villes sauf Anvers
-
+                            for v in
+                            range(1, cities_number)) <= 1)  # on fait la boucle sur toutes les villes sauf Anvers
 
 model += costs.salary(x, y, distances, v_moy) + costs.maintainance(x, semesters) + costs.fuel(x, distances,
                                                                                               y), 'Objective Function '
