@@ -145,7 +145,7 @@ for s in semesters:
                     model += V[c][a][s] <= pos[c][i]
                 model += V[c][a][s] <= 1 - pos[c][s]
                 model += V[c][a][s] <= 1 - pos[c][s - a - 1]
-                model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s - a, s)) - pos[c][s] - a + 1
+                model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s - a, s)) - pos[c][s] - pos[c][s - a - 1] - a + 1
     for c1 in range(1,max_trucks_type1):
         model += pos[c1][s] <= pos[c1 - 1][s]
     for c2 in range(max_trucks_type1+1, max_trucks_type2):
