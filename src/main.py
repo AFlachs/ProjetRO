@@ -57,7 +57,7 @@ V = [[[LpVariable('V_{},{},{}'.format(c, s, a), cat='Binary', lowBound=0)
       for s in range(semesters_number)]
      for c in range(max_trucks)]
 # V_cas
-A = [[LpVariable('A_{}{}'.format(str(c), str(s))) for s in semesters] for c in range(max_trucks)]
+A = [[LpVariable('A_{},{}'.format(str(c), str(s))) for s in semesters] for c in range(max_trucks)]
 # A_cs
 
 m = [[[[LpVariable('m_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0) for j in range(business_days)]
