@@ -45,7 +45,7 @@ p = [[LpVariable('p_{},{}'.format(c, j), cat='Binary', lowBound=0) for j in rang
      range(max_trucks)]
 # p_cj
 
-#q = [[LpVariable('q_{},{}'.format(c, j), cat='Binary', lowBound=0) for j in range(business_days - 1)] for c in
+# q = [[LpVariable('q_{},{}'.format(c, j), cat='Binary', lowBound=0) for j in range(business_days - 1)] for c in
 #     range(max_trucks)]
 # q_cj=p_cj*p_cj+1
 
@@ -98,7 +98,7 @@ for c in range(max_trucks):
                 model += (m[c][f][v][j] <= 0.5 * (p[c][j] + y[c][f][v][j]),
                           'Prod bin y, p  (b) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
 
-        #if j > 0:
+        # if j > 0:
         #    if j < business_days - 2:
         #        model += (1 >= lpSum(x[c][f][v][jp] for jp in range(j, j + 3) for f in range(max_times_in_city)
         #                             for v in range(cities_number)) / (3 * max_times_in_city * cities_number)
@@ -106,7 +106,7 @@ for c in range(max_trucks):
         #    else:
         #        model += p[c][j] >= p[c][j - 1]
         #        model += p[c][j] <= p[c][j - 1]
-        #if j < business_days - 1:
+        # if j < business_days - 1:
         #    model += q[c][j] >= p[c][j] + p[c][j + 1] - 1
         #    model += q[c][j] <= 0.5 * (p[c][j] + p[c][j + 1])
 
@@ -116,7 +116,6 @@ for c in range(max_trucks):
                                                                                   for v in
                                                                                   range(cities_number)) <= work_time,
                   'WorkTime {},{}'.format(str(c), str(j)))
-
 
     print("Camion : " + str(c))
 
@@ -146,16 +145,17 @@ for s in semesters:
                 model += V[c][a][s] <= 1 - pos[c][s]
                 model += V[c][a][s] <= 1 - pos[c][s - a - 1]
                 model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s - a, s)) - pos[c][s] - pos[c][s - a - 1] - a + 1
-    for c1 in range(1,max_trucks_type1):
+    for c1 in range(1, max_trucks_type1):
         model += pos[c1][s] <= pos[c1 - 1][s]
-    for c2 in range(max_trucks_type1+1, max_trucks_type2):
+    for c2 in range(max_trucks_type1 + 1, max_trucks_type2):
         model += pos[c2][s] <= pos[c2 - 1][s]
 
 print("Initialisation terminée")
 
-model += costs.salary(x, y, distances, v_moy) + costs.maintainance(
-    sum(pos[c][s] for c in range(max_trucks) for s in semesters)) + costs.fuel(x, y, distances,
-                                                                               ), 'Objective Function '
+model += costs.salary(x, y, distances, v_moy) + \
+         costs.maintainance(sum(pos[c][s] for c in range(max_trucks) for s in semesters)) + \
+         costs.fuel(x, y, distances) + \
+         costs.buying_trucks(A, semesters, max_trucks_type1, max_trucks_type2) , 'Objective Function '
 
 input("Press enter")
 print("Solving")
