@@ -6,7 +6,6 @@ import costs
 v_moy = 70  # km/h
 work_time = 8  # heures
 tau = 1  # heures
-delivery_waiting = 1  # heures
 max_capacity_1 = 16.5  # Tonnes
 max_capacity_2 = 5.5  # Tonnes
 depreciation_rate = 0.2  # pas d'unité
@@ -26,7 +25,6 @@ semesters_number = len(semesters)
 selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1,
                                                        buying_price_2)  # cost[type][age]
 
-
 #### PAS A NOUS #####
 model = LpProblem(name="Demo", sense=LpMinimize)
 
@@ -45,9 +43,14 @@ y = [[[[LpVariable('y_{},{},{},{}'.format(c, f, v, j), cat='Binary') for j in ra
 p = [[LpVariable('p_{},{}'.format(c, j), cat='Binary') for j in range(business_days)] for c in range(max_trucks)]
 # p_cj
 
-pos = [[LpVariable('pos_{},{}'.format(str(c), str(j)), cat='Binary') for j in range(business_days)] for c in
+pos = [[LpVariable('pos_{},{}'.format(str(c), str(s)), cat='Binary') for s in semesters] for c in
        range(max_trucks)]
 # pos_cs
+# L'entreprise possède 10 camions au départ, il faut donc le mettre dans pos pour le jour 0
+for c10 in range(4):  # 4 camions de type 1
+    pos[c10][0] = 1
+for c20 in range(20, 6):  # 6 camions de type 2
+    pos[c20][0] = 1
 
 V = [[[LpVariable('V_{},{},{}'.format(c, s, a), cat='Binary')
        for a in range(semesters_number)]
@@ -72,7 +75,6 @@ z = [[[[LpVariable('z_{},{},{},{}'.format(c, f, v, j), cat='Binary') for j in ra
 # z_cf^vj
 print('Romanus eunt domus')
 
-
 for c in range(max_trucks):
     for j in range(business_days):
         for f in range(max_times_in_city):
@@ -95,7 +97,6 @@ for c in range(max_trucks):
                           'Produit de binaires y et p (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
                 model += (m[c][f][v][j] <= 0.5 * (p[c][j] + y[c][f][v][j]),
                           'Produit de binaires y et p (b) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
-
         # Temps de travail inférieur à worktime
         model += (costs.distances_camion(x, y, distances, c, j) - 1 + tau * lpSum(x[c][f][v][j]
                                                                                   for f in range(max_times_in_city)
@@ -126,12 +127,12 @@ for s in semesters:
     # Contraintes vente :
     for c in range(max_trucks):
         for a in range(len(V[0])):
-            if s-a-1 >= 0:
-                for i in range(s-a, s):
+            if s - a - 1 >= 0:
+                for i in range(s - a, s):
                     model += V[c][a][s] <= pos[c][i]
                 model += V[c][a][s] <= 1 - pos[c][s]
-                model += V[c][a][s] <= 1 - pos[c][s-a-1]
-                model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s-a, s)) - pos[c][s] - a + 1
+                model += V[c][a][s] <= 1 - pos[c][s - a - 1]
+                model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s - a, s)) - pos[c][s] - a + 1
 
 print("Initialisation terminée")
 input("Press enter")
