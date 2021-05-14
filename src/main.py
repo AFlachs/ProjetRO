@@ -26,7 +26,6 @@ semesters_number = len(semesters)
 selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1,
                                                        buying_price_2)  # cost[type][age]
 
-#### PAS A NOUS #####
 model = LpProblem(name="Demo", sense=LpMinimize)
 
 x = [[[[LpVariable('x_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0) for j in range(business_days)]
@@ -130,9 +129,12 @@ for j in range(business_days):
                             range(1, cities_number)) <= 1)  # on fait la boucle sur toutes les villes sauf Anvers
 
 for s in semesters:
-    for v in range(cities_number):
-        # quantity(v, s, x, p, y) >= requests[s][v] #TODO
-        a = 1
+    if s > 0:
+        for v in range(cities_number):
+            qtt = costs.compute_quantity(v, max_times_in_city, s * (business_days // semesters_number), x, y, z, m,
+                                         max_trucks_type1,
+                                         max_trucks_type2)  # On donne autant de jours qu'il y a eu depuis le début
+            model += qtt >= requests[s][v]  # Quantité livrée suffisante
 
     # Contraintes vente :
     for c in range(max_trucks):
@@ -145,6 +147,8 @@ for s in semesters:
                 model += V[c][a][s] <= 1 - pos[c][s]
                 model += V[c][a][s] <= 1 - pos[c][s - a - 1]
                 model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s - a, s)) - pos[c][s] - pos[c][s - a - 1] - a + 1
+
+    # Contraintes possession de camion
     for c1 in range(1, max_trucks_type1):
         model += pos[c1][s] <= pos[c1 - 1][s]
     for c2 in range(max_trucks_type1 + 1, max_trucks_type2):
@@ -155,9 +159,10 @@ print("Initialisation terminée")
 model += costs.salary(x, y, distances, v_moy) + \
          costs.maintainance(sum(pos[c][s] for c in range(max_trucks) for s in semesters)) + \
          costs.fuel(x, y, distances) + \
-         costs.buying_trucks(A, semesters, max_trucks_type1, max_trucks_type2) , 'Objective Function '
+         costs.buying_trucks(A, semesters, max_trucks_type1, max_trucks_type2) + \
+         costs.selling_trucks(V, semesters, max_trucks_type1, max_trucks_type2, selling_cost), 'Objective Function '
 
 input("Press enter")
 print("Solving")
 
-status = model.solve(solver=GLPK(msg=True, keepFiles=True, timeLimit=450))
+status = model.solve(solver=GLPK(msg=True, keepFiles=True))

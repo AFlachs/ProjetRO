@@ -28,14 +28,44 @@ def salary(x, y, distances, V_moy):
 def maintainance(n):
     return 1000 * n
 
-def compute_quantity(semesters, ville, max_times_in_city, business_days, x, z, m, type1_max_trucks, type2_max_trucks):
+
+def compute_qtt_liege(max_times_in_city, business_days, x, z, type1_max_trucks, type2_max_trucks):
     res = 0
     for f in range(max_times_in_city):
         for j in range(business_days):
             for c in range(type1_max_trucks):
-                a = 1
+                res += 16.5 * z[c][f][0][j]
             for c in range(type2_max_trucks):
-                a = 1
+                    res += 5.5 * x[c][f][0][j] - 11 * z[c][f][0][j]
+    return res
+
+
+def compute_qtt_anvers(max_times_in_city, business_days, x, y, z, m, type1_max_trucks, type2_max_trucks):
+    res = 0
+    for f in range(max_times_in_city):
+        for j in range(business_days):
+            for c in range(type1_max_trucks):
+                res += 16.5 * x[c][f][0][j] - 16.5 * z[c][f][0][j]
+            for c in range(type2_max_trucks):
+                res += 16.5 * x[c][f][0][j] - 11 * z[c][f][0][j] - lpSum(16.5*y[c][f][v][j] - 11*m[c][f][v][j]
+                                                                         for v in range(1, 6))
+    return res
+
+
+def compute_quantity(ville, max_times_in_city, business_days, x, y, z, m, type1_max_trucks, type2_max_trucks):
+    res = 0
+    if ville == 0:
+        res = compute_qtt_anvers(max_times_in_city, business_days, x, y, z, m, type1_max_trucks, type2_max_trucks)
+    elif ville == 5:
+        res = compute_qtt_liege(max_times_in_city, business_days, x, z, type1_max_trucks, type2_max_trucks)
+    else:
+        for f in range(max_times_in_city):
+            for j in range(business_days):
+                for c in range(type1_max_trucks):
+                    res += 16.5*x[c][f][ville][j] - 16.5*z[c][f][ville][j]
+                for c in range(type2_max_trucks):
+                    res += 16.5*x[c][f][ville][j] - 11*z[c][f][ville][j]
+    return res
 
 
 def fuel(x, y, distances):
@@ -57,6 +87,12 @@ def buying_trucks(A, semesters, type1_max_trucks, type2_max_trucks):
     return res
 
 
-def selling_trucks():
-    # todo
-    return None
+def selling_trucks(V, semesters, type1_max_trucks, type2_max_trucks, prix_vente):
+    res = 0
+    for a in range(1, len(semesters) - 1):
+        for s in range(a+1, len(semesters)):
+            for c in range(type1_max_trucks):
+                res += prix_vente[0][a] * V[c][a][s]
+            for c in range(type2_max_trucks):
+                res += prix_vente[1][a] * V[c][a][s]
+    return res
