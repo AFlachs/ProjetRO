@@ -52,9 +52,9 @@ pos = [[LpVariable('pos_{},{}'.format(str(c), str(j)), cat='Binary', lowBound=0)
 # pos_cs
 # L'entreprise possède 10 camions au départ, il faut donc le mettre dans pos pour le jour 0
 for c10 in range(4):  # 4 camions de type 1
-    pos[c10][0] = 1
+    model += pos[c10][0] == 1
 for c20 in range(20, 6):  # 6 camions de type 2
-    pos[c20][0] = 1
+    model += pos[c20][0] == 1
 
 V = [[[LpVariable('V_{},{},{}'.format(c, s, a), cat='Binary', lowBound=0)
        for a in range(semesters_number)]
