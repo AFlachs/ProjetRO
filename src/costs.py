@@ -5,13 +5,13 @@ def distances_camion(x, y, distances, c, j, max_truck_type1):
     """
     Distance parcourue par un camion c le jour j
     """
-    base = 2 * lpSum(x[c][f][v][j] * distances[v][len(distances) - 1] for v in range(len(distances)) for f in range(len(x[0])))
+    base = 2 * lpSum(x[c][f][v][j] * distances[v][len(distances) - 1] for v in range(len(distances)-1) for f in range(len(x[0])))
     if c < max_truck_type1: # Type 1
         return base
     if c >= max_truck_type1: # Type 2
         return base + lpSum(y[c][f][v][j] *
                             (distances[v][0] - distances[0][len(distances) - 1] - distances[v][len(distances)-1])
-                            for v in range(1, len(distances))
+                            for v in range(1, len(distances)-1)
                             for f in range(len(x[0])))
 
 
@@ -51,7 +51,7 @@ def compute_qtt_anvers(max_times_in_city, business_days, x, y, z, m, type1_max_t
                 res += 16.5 * x[c][f][0][j] - 16.5 * z[c][f][0][j]
             for c in range(type2_max_trucks):
                 res += 16.5 * x[c][f][0][j] - 11 * z[c][f][0][j] - lpSum(16.5*y[c][f][v][j] - 11*m[c][f][v][j]
-                                                                         for v in range(1, 6))
+                                                                         for v in range(1, 5))
     return res
 
 

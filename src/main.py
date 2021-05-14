@@ -1,3 +1,5 @@
+import json
+
 import pulp
 from pulp import GLPK
 from pulp import LpMinimize, LpProblem, lpSum, LpVariable
@@ -16,13 +18,17 @@ max_trucks = 30  # nombre de camions
 max_trucks_type1 = 20  # nombre max de camions de type 1
 max_trucks_type2 = 10  # nombre max de camions de type 2
 max_times_in_city = 1  # nombre de fois max qu'un camion peut passer dans une ville par jour
-business_days = 127 #1270  # nombre de jours
+business_days_by_semester = 128
+semesters = [0, 1, 2, 3, 4, 5]  # introduceProblem.introduce_semesters()
+semesters_number = len(semesters)
+n = 16
+days_by_loop = business_days_by_semester // n
+business_days = days_by_loop * semesters_number
+
 distances = introduceProblem.introduce_distances()
 requests = introduceProblem.introduce_city_requests()  # requests[s][v]
 cities_number = 5
 transport_types = introduceProblem.introduce_truck_types()
-semesters = [ 0 ]  # introduceProblem.introduce_semesters()
-semesters_number = len(semesters)
 selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1,
                                                        buying_price_2)  # cost[type][age]
 
@@ -139,7 +145,7 @@ for s in semesters:
             qtt = costs.compute_quantity(v, max_times_in_city, s * (business_days // semesters_number), x, y, z, m,
                                          max_trucks_type1,
                                          max_trucks_type2)  # On donne autant de jours qu'il y a eu depuis le début
-            model += qtt >= requests[s][v]  # Quantité livrée suffisante
+            model += qtt * n >= requests[s][v]  # Quantité livrée suffisante
 
     # Contraintes vente :
     for c in range(max_trucks):
@@ -147,10 +153,13 @@ for s in semesters:
         model += A[c][s] >= pos[c][s] - pos[c][s - 1]
         for a in range(len(V[0])):
             if s - a - 1 >= 0:
+                """
                 for i in range(s - a, s):
                     model += V[c][a][s] <= pos[c][i]
                 model += V[c][a][s] <= 1 - pos[c][s]
                 model += V[c][a][s] <= 1 - pos[c][s - a - 1]
+                """
+                model += V[c][a][s] <= (lpSum(pos[c][i] for i in range(s-a, s)) + 2 - pos[c][s] - pos[c][s-a-1])/(a+2)
                 model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s - a, s)) - pos[c][s] - pos[c][s - a - 1] - a + 1
 
     # Contraintes possession de camion
@@ -161,13 +170,21 @@ for s in semesters:
 
 print("Initialisation terminée")
 
-model += costs.salary(x, y, distances, v_moy, max_trucks_type1) + \
+model += n * costs.salary(x, y, distances, v_moy, max_trucks_type1) + \
          costs.maintainance(sum(pos[c][s] for c in range(max_trucks) for s in semesters)) + \
-         costs.fuel(x, y, distances, max_trucks_type1) + \
+         n * costs.fuel(x, y, distances, max_trucks_type1) + \
          costs.buying_trucks(A, semesters, max_trucks_type1, max_trucks_type2) - \
          costs.selling_trucks(V, semesters, max_trucks_type1, max_trucks_type2, selling_cost), 'Objective Function '
 
 input("Press enter")
 print("Solving")
 
-status = model.solve(solver=GLPK(msg=True, keepFiles=True, timeLimit=300))
+status = model.solve(solver=GLPK(msg=True, keepFiles=True))
+#status = model.solve(solver=GLPK(msg=True, keepFiles=True, timeLimit=600))
+
+data = model.toDict()
+
+json_content = json.dumps(data, indent=4)
+
+with open("jason_data.json", "w") as outfile:
+    outfile.write(json_content)
