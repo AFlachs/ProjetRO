@@ -1,3 +1,4 @@
+import pulp
 from pulp import GLPK
 from pulp import LpMinimize, LpProblem, lpSum, LpVariable
 import introduceProblem
@@ -14,13 +15,13 @@ buying_price_2 = 50000  # euros
 max_trucks = 30  # nombre de camions
 max_trucks_type1 = 20  # nombre max de camions de type 1
 max_trucks_type2 = 10  # nombre max de camions de type 2
-max_times_in_city = 3  # nombre de fois max qu'un camion peut passer dans une ville par jour
-business_days = 1270  # nombre de jours
+max_times_in_city = 1  # nombre de fois max qu'un camion peut passer dans une ville par jour
+business_days = 127 #1270  # nombre de jours
 distances = introduceProblem.introduce_distances()
 requests = introduceProblem.introduce_city_requests()  # requests[s][v]
-cities_number = 6
+cities_number = 5
 transport_types = introduceProblem.introduce_truck_types()
-semesters = introduceProblem.introduce_semesters()
+semesters = [ 0 ]  # introduceProblem.introduce_semesters()
 semesters_number = len(semesters)
 selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1,
                                                        buying_price_2)  # cost[type][age]
@@ -62,7 +63,8 @@ V = [[[LpVariable('V_{},{},{}'.format(c, s, a), cat='Binary', lowBound=0)
       for s in range(semesters_number)]
      for c in range(max_trucks)]
 # V_cas
-A = [[LpVariable('A_{},{}'.format(str(c), str(s))) for s in semesters] for c in range(max_trucks)]
+
+A = [[LpVariable('A_{},{}'.format(str(c), str(s)), cat='Binary') for s in semesters] for c in range(max_trucks)]
 # A_cs
 
 m = [[[[LpVariable('m_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0) for j in range(business_days)]
@@ -162,10 +164,10 @@ print("Initialisation terminée")
 model += costs.salary(x, y, distances, v_moy, max_trucks_type1) + \
          costs.maintainance(sum(pos[c][s] for c in range(max_trucks) for s in semesters)) + \
          costs.fuel(x, y, distances, max_trucks_type1) + \
-         costs.buying_trucks(A, semesters, max_trucks_type1, max_trucks_type2) + \
+         costs.buying_trucks(A, semesters, max_trucks_type1, max_trucks_type2) - \
          costs.selling_trucks(V, semesters, max_trucks_type1, max_trucks_type2, selling_cost), 'Objective Function '
 
 input("Press enter")
 print("Solving")
 
-status = model.solve(solver=GLPK(msg=True, keepFiles=True))
+status = model.solve(solver=GLPK(msg=True, keepFiles=True, timeLimit=300))
