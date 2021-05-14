@@ -50,6 +50,7 @@ p = [[LpVariable('p_{},{}'.format(c, j), cat='Binary', lowBound=0) for j in rang
 pos = [[LpVariable('pos_{},{}'.format(str(c), str(j)), cat='Binary', lowBound=0) for j in range(business_days)] for c in
        range(max_trucks)]
 # pos_cs
+
 # L'entreprise possède 10 camions au départ, il faut donc le mettre dans pos pour le jour 0
 for c10 in range(4):  # 4 camions de type 1
     model += pos[c10][0] == 1
@@ -81,7 +82,7 @@ print('Nobody Expects Spanish Inquisition')
 
 for c in range(max_trucks):
     for j in range(business_days):
-        s = j % (business_days // len(semesters))  # Semestre actuel
+        s = int(j // (business_days / len(semesters)))  # Semestre actuel
         for f in range(max_times_in_city):
             for v in range(cities_number):
                 model += (y[c][f][v][j] >= x[c][f][v][j] + x[c][f][0][j] - 1,
@@ -114,11 +115,9 @@ for c in range(max_trucks):
         #    model += q[c][j] <= 0.5 * (p[c][j] + p[c][j + 1])
 
         # Temps de travail inférieur à worktime
-        model += (costs.distances_camion(x, y, distances, c, j) - 1 + tau * lpSum(x[c][f][v][j]
-                                                                                  for f in range(max_times_in_city)
-                                                                                  for v in
-                                                                                  range(cities_number)) <= work_time,
-                  'WorkTime {},{}'.format(str(c), str(j)))
+        model += (costs.distances_camion(x, y, distances, c, j, max_trucks_type1) +
+                  v_moy * tau * lpSum(x[c][f][v][j] for f in range(max_times_in_city) for v in range(cities_number))
+                  <= v_moy * work_time, 'WorkTime {},{}'.format(str(c), str(j)))
 
     print("Camion : " + str(c))
 
@@ -160,9 +159,9 @@ for s in semesters:
 
 print("Initialisation terminée")
 
-model += costs.salary(x, y, distances, v_moy) + \
+model += costs.salary(x, y, distances, v_moy, max_trucks_type1) + \
          costs.maintainance(sum(pos[c][s] for c in range(max_trucks) for s in semesters)) + \
-         costs.fuel(x, y, distances) + \
+         costs.fuel(x, y, distances, max_trucks_type1) + \
          costs.buying_trucks(A, semesters, max_trucks_type1, max_trucks_type2) + \
          costs.selling_trucks(V, semesters, max_trucks_type1, max_trucks_type2, selling_cost), 'Objective Function '
 

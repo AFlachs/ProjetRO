@@ -1,24 +1,27 @@
 from pulp import lpSum
 
 
-def distances_camion(x, y, distances, c, j):
+def distances_camion(x, y, distances, c, j, max_truck_type1):
     """
     Distance parcourue par un camion c le jour j
     """
-    return lpSum(2 * x[c][f][v][j] * distances[v][len(distances) - 1] +
-                 y[c][f][v][j] * (distances[v][0] + distances[0][len(distances) - 1] - distances[v][len(distances) - 1])
-                 for f in range(len(x[0]))
-                 for v in range(len(distances))
-                 )
+    base = 2 * lpSum(x[c][f][v][j] * distances[v][len(distances) - 1] for v in range(len(distances)) for f in range(len(x[0])))
+    if c < max_truck_type1: # Type 1
+        return base
+    if c >= max_truck_type1: # Type 2
+        return base + lpSum(y[c][f][v][j] *
+                            (distances[v][0] - distances[0][len(distances) - 1] - distances[v][len(distances)-1])
+                            for v in range(1, len(distances))
+                            for f in range(len(x[0])))
 
 
-def salary(x, y, distances, V_moy):
+def salary(x, y, distances, V_moy, max_truck_type1):
     alpha = 13  # Paie par l'heure
     print("in salary")
     res = 0
     for c in range(len(x)):
         for j in range(len(x[0][0][0])):
-            res += distances_camion(x, y, distances, c, j) / V_moy
+            res += (distances_camion(x, y, distances, c, j, max_truck_type1) / V_moy)
             for v in range(len(x[0][0])):
                 for f in range(len(x[0])):
                     res += x[c][f][v][j]
@@ -68,11 +71,11 @@ def compute_quantity(ville, max_times_in_city, business_days, x, y, z, m, type1_
     return res
 
 
-def fuel(x, y, distances):
+def fuel(x, y, distances, max_truck_type1):
     l = 0.35  # consommation d'essence par kilomètre
     c_e = 1.5  # Prix du litre
     print("in fuel")
-    return lpSum(l * c_e * distances_camion(x, y, distances, c, j)
+    return lpSum(l * c_e * distances_camion(x, y, distances, c, j, max_truck_type1)
                  for c in range(len(x))
                  for j in range(len(x[0][0][0])))
 
