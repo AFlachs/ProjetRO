@@ -25,25 +25,29 @@ semesters_number = len(semesters)
 selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1,
                                                        buying_price_2)  # cost[type][age]
 
-#### PAS A NOUS #####
 model = LpProblem(name="Demo", sense=LpMinimize)
 
-x = [[[[LpVariable('x_{},{},{},{}'.format(c, f, v, j), cat='Binary') for j in range(business_days)]
+x = [[[[LpVariable('x_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0) for j in range(business_days)]
        for v in range(cities_number)]
       for f in range(max_times_in_city)]
      for c in range(max_trucks)
      ]  # x_cf^vj
 
-y = [[[[LpVariable('y_{},{},{},{}'.format(c, f, v, j), cat='Binary') for j in range(business_days)]
+y = [[[[LpVariable('y_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0) for j in range(business_days)]
        for v in range(cities_number)]
       for f in range(max_times_in_city)]
      for c in range(max_trucks)
      ]  # y_cf^vj
 
-p = [[LpVariable('p_{},{}'.format(c, j), cat='Binary') for j in range(business_days)] for c in range(max_trucks)]
+p = [[LpVariable('p_{},{}'.format(c, j), cat='Binary', lowBound=0) for j in range(business_days)] for c in
+     range(max_trucks)]
 # p_cj
 
-pos = [[LpVariable('pos_{},{}'.format(str(c), str(s)), cat='Binary') for s in semesters] for c in
+# q = [[LpVariable('q_{},{}'.format(c, j), cat='Binary', lowBound=0) for j in range(business_days - 1)] for c in
+#     range(max_trucks)]
+# q_cj=p_cj*p_cj+1
+
+pos = [[LpVariable('pos_{},{}'.format(str(c), str(j)), cat='Binary', lowBound=0) for j in range(business_days)] for c in
        range(max_trucks)]
 # pos_cs
 # L'entreprise possède 10 camions au départ, il faut donc le mettre dans pos pour le jour 0
@@ -52,60 +56,69 @@ for c10 in range(4):  # 4 camions de type 1
 for c20 in range(20, 6):  # 6 camions de type 2
     pos[c20][0] = 1
 
-V = [[[LpVariable('V_{},{},{}'.format(c, s, a), cat='Binary')
+V = [[[LpVariable('V_{},{},{}'.format(c, s, a), cat='Binary', lowBound=0)
        for a in range(semesters_number)]
       for s in range(semesters_number)]
      for c in range(max_trucks)]
 # V_cas
-A = [[LpVariable('A_{}{}'.format(str(c), str(s))) for s in semesters] for c in range(max_trucks)]
+A = [[LpVariable('A_{},{}'.format(str(c), str(s))) for s in semesters] for c in range(max_trucks)]
 # A_cs
 
-m = [[[[LpVariable('m_{c},{f},{v},{j}', cat='Binary') for j in range(business_days)]
+m = [[[[LpVariable('m_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0) for j in range(business_days)]
        for v in range(cities_number)]
       for f in range(max_times_in_city)]
      for c in range(max_trucks)
      ]
 # m_cf^vj
 
-z = [[[[LpVariable('z_{},{},{},{}'.format(c, f, v, j), cat='Binary') for j in range(business_days)]
+z = [[[[LpVariable('z_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0) for j in range(business_days)]
        for v in range(cities_number)]
       for f in range(max_times_in_city)]
      for c in range(max_trucks)
      ]
 # z_cf^vj
-print('Romanus eunt domus')
+print('Nobody Expects Spanish Inquisition')
 
 for c in range(max_trucks):
     for j in range(business_days):
+        s = j % (business_days // len(semesters))  # Semestre actuel
         for f in range(max_times_in_city):
             for v in range(cities_number):
                 model += (y[c][f][v][j] >= x[c][f][v][j] + x[c][f][0][j] - 1,
-                          'Produit de binaires (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
+                          'Prod bin (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
                 model += (y[c][f][v][j] <= 0.5 * (x[c][f][v][j] + x[c][f][0][j]),
-                          'Produit de binaires (b) {},{},{},{}'.format(str(c), str(f), str(v),
-                                                                       str(j)))  # 0 est l'indice d'anvers
+                          'Prod bin (b) {},{},{},{}'.format(str(c), str(f), str(v),
+                                                            str(j)))  # 0 est l'indice d'anvers
 
-                s = j % (business_days // len(semesters))  # Semestre actuel
                 model += pos[c][s] >= x[c][f][v][j]
-                # model += (x[c][f][v][j] >=)
 
                 model += (z[c][f][v][j] >= p[c][j] + x[c][f][v][j] - 1,
-                          'Produit de binaires x et p (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
+                          'Prod bin x, p (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
                 model += (z[c][f][v][j] <= 0.5 * (p[c][j] + x[c][f][v][j]),
-                          'Produit de binaires x et p (b) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
+                          'Prod bin x, p (b) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
                 model += (m[c][f][v][j] >= p[c][j] + y[c][f][v][j] - 1,
-                          'Produit de binaires y et p (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
+                          'Prod bin y, p (a) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
                 model += (m[c][f][v][j] <= 0.5 * (p[c][j] + y[c][f][v][j]),
-                          'Produit de binaires y et p (b) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
+                          'Prod bin y, p  (b) {},{},{},{}'.format(str(c), str(f), str(v), str(j)))
+
+        # if j > 0:
+        #    if j < business_days - 2:
+        #        model += (1 >= lpSum(x[c][f][v][jp] for jp in range(j, j + 3) for f in range(max_times_in_city)
+        #                             for v in range(cities_number)) / (3 * max_times_in_city * cities_number)
+        #                  + p[c][j] + p[c][j - 1] - 2 * q[c][j - 1])
+        #    else:
+        #        model += p[c][j] >= p[c][j - 1]
+        #        model += p[c][j] <= p[c][j - 1]
+        # if j < business_days - 1:
+        #    model += q[c][j] >= p[c][j] + p[c][j + 1] - 1
+        #    model += q[c][j] <= 0.5 * (p[c][j] + p[c][j + 1])
+
         # Temps de travail inférieur à worktime
         model += (costs.distances_camion(x, y, distances, c, j) - 1 + tau * lpSum(x[c][f][v][j]
                                                                                   for f in range(max_times_in_city)
                                                                                   for v in
                                                                                   range(cities_number)) <= work_time,
-                  'Travail journalier {},{}'.format(str(c), str(j)))
-    if c >= 1:
-        for s in semesters:
-            model += pos[c][s] <= pos[c - 1][s]
+                  'WorkTime {},{}'.format(str(c), str(j)))
 
     print("Camion : " + str(c))
 
@@ -113,34 +126,47 @@ for j in range(business_days):
     for f in range(max_times_in_city):
         for c1 in range(max_trucks_type1):
             model += (lpSum(x[c1][f][v][j]
-                            for v in range(cities_number)) <= 1)
+                            for v in range(cities_number)) <= 1)  # Une ville par passage pour type 1
         for c2 in range(max_trucks_type1, max_trucks_type2):
             model += (lpSum(x[c2][f][v][j]
-                            for v in
+                            for v in  # Max une ville pour type 2 sans compter Anvers
                             range(1, cities_number)) <= 1)  # on fait la boucle sur toutes les villes sauf Anvers
 
 for s in semesters:
-    for v in range(cities_number):
-        # quantity(v, s, x, p, y) >= requests[s][v]
-        a = 1
+    if s > 0:
+        for v in range(cities_number):
+            qtt = costs.compute_quantity(v, max_times_in_city, s * (business_days // semesters_number), x, y, z, m,
+                                         max_trucks_type1,
+                                         max_trucks_type2)  # On donne autant de jours qu'il y a eu depuis le début
+            model += qtt >= requests[s][v]  # Quantité livrée suffisante
 
     # Contraintes vente :
     for c in range(max_trucks):
+        model += A[c][s] <= 0.5 * (pos[c][s] + 1 - pos[c][s - 1])
+        model += A[c][s] >= pos[c][s] - pos[c][s - 1]
         for a in range(len(V[0])):
             if s - a - 1 >= 0:
                 for i in range(s - a, s):
                     model += V[c][a][s] <= pos[c][i]
                 model += V[c][a][s] <= 1 - pos[c][s]
                 model += V[c][a][s] <= 1 - pos[c][s - a - 1]
-                model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s - a, s)) - pos[c][s] - a + 1
+                model += V[c][a][s] >= lpSum(pos[c][i] for i in range(s - a, s)) - pos[c][s] - pos[c][s - a - 1] - a + 1
+
+    # Contraintes possession de camion
+    for c1 in range(1, max_trucks_type1):
+        model += pos[c1][s] <= pos[c1 - 1][s]
+    for c2 in range(max_trucks_type1 + 1, max_trucks_type2):
+        model += pos[c2][s] <= pos[c2 - 1][s]
 
 print("Initialisation terminée")
+
+model += costs.salary(x, y, distances, v_moy) + \
+         costs.maintainance(sum(pos[c][s] for c in range(max_trucks) for s in semesters)) + \
+         costs.fuel(x, y, distances) + \
+         costs.buying_trucks(A, semesters, max_trucks_type1, max_trucks_type2) + \
+         costs.selling_trucks(V, semesters, max_trucks_type1, max_trucks_type2, selling_cost), 'Objective Function '
+
 input("Press enter")
-
-model += costs.salary(x, y, distances, v_moy) + costs.maintainance(x, semesters) + costs.fuel(x, y, distances,
-                                                                                              ), 'Objective Function '
-
 print("Solving")
-input("Press enter")
 
-status = model.solve(solver=GLPK(msg=True, keepFiles=True, timeLimit=300))
+status = model.solve(solver=GLPK(msg=True, keepFiles=True))
