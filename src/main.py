@@ -1,5 +1,5 @@
 import json
-
+import numpy as np
 import pulp
 from pulp import GLPK
 from pulp import LpMinimize, LpProblem, lpSum, LpVariable
@@ -184,7 +184,20 @@ status = model.solve(solver=GLPK(msg=True, keepFiles=True, timeLimit=3600*13))
 
 data = model.toDict()
 
-json_content = json.dumps(data, indent=4)
+
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(NpEncoder, self).default(obj)
+
+
+json_content = json.dumps(data, indent=4, cls=NpEncoder)
 
 with open("jason_data.json", "w") as outfile:
     outfile.write(json_content)
