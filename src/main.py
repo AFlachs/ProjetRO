@@ -32,7 +32,7 @@ transport_types = introduceProblem.introduce_truck_types()
 selling_cost = introduceProblem.introduce_selling_cost(depreciation_rate, buying_price_1,
                                                        buying_price_2)  # cost[type][age]
 
-model = LpProblem(name="Demo", sense=LpMinimize)
+model = LpProblem(name="Projet", sense=LpMinimize)
 
 x = [[[[LpVariable('x_{},{},{},{}'.format(c, f, v, j), cat='Binary', lowBound=0) for j in range(business_days)]
        for v in range(cities_number)]
@@ -179,8 +179,8 @@ model += n * costs.salary(x, y, distances, v_moy, max_trucks_type1) + \
 input("Press enter")
 print("Solving")
 
-status = model.solve(solver=GLPK(msg=True, keepFiles=True))
-#status = model.solve(solver=GLPK(msg=True, keepFiles=True, timeLimit=600))
+#status = model.solve(solver=GLPK(msg=True, keepFiles=True))
+status = model.solve(solver=GLPK(msg=True, keepFiles=True, timeLimit=3600*13))
 
 data = model.toDict()
 
